@@ -1,0 +1,51 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import QuoteCard from '../../components/QuoteCard.astro';
+import { getAnalyses } from '../../lib/posts';
+import { getYahooQuote, fmtPrix, fmtPct, sens } from '../../lib/market';
+import { fmtDate, url, tempsLecture } from '../../lib/util';
+
+export async function getStaticPaths() {
+  const analyses = await getAnalyses();
+  return analyses.map((a) => ({ params: { slug: a.id }, props: { a } }));
+}
+const { a } = Astro.props;
+const { Content } = await render(a);
+const d = a.data;
+const q = d.ticker ? await getYahooQuote(d.ticker, d.entreprise) : null;
+const potentiel = q?.prix && d.objectif ? ((d.objectif - q.prix) / q.prix) * 100 : null;
+---
+<Base title={d.title} description={d.resume}>
+  <article>
+    <p class="muted small"><a href={url('/analyses')}>Analyses</a> · {fmtDate(d.date)} · {tempsLecture(a.body)} min</p>
+    <h1>{d.title}</h1>
+    <div class="layout">
+      <div class="prose"><Content /></div>
+      <aside>
+        <div class="card fiche">
+          <h3>{d.entreprise}</h3>
+          <dl>
+            {d.ticker && <><dt>Ticker</dt><dd>{d.ticker}</dd></>}
+            {d.secteur && <><dt>Secteur</dt><dd>{d.secteur}</dd></>}
+            {d.avis && <><dt>Mon avis</dt><dd><span class="badge">{d.avis}</span></dd></>}
+            {d.objectif && <><dt>Objectif</dt><dd class="num">{fmtPrix(d.objectif, q?.devise)}</dd></>}
+            {potentiel != null && <><dt>Potentiel</dt><dd class={`num ${sens(potentiel)}`}>{fmtPct(potentiel)}</dd></>}
+          </dl>
+        </div>
+        {q && q.prix != null && <QuoteCard q={q} grand periode="Cours sur 3 mois (au dernier build du site)" />}
+        {d.tags.length > 0 && <p>{d.tags.map((t) => <span class="tag">#{t}</span>)}</p>}
+      </aside>
+    </div>
+  </article>
+</Base>
+<style>
+  article { padding-top: 24px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; align-items: start; }
+  aside { display: grid; gap: 16px; position: sticky; top: 16px; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } aside { position: static; order: -1; } }
+  .fiche h3 { margin: 0 0 8px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 0.92rem; }
+  dt { color: var(--muted); }
+  dd { margin: 0; text-align: right; font-weight: 500; }
+</style>

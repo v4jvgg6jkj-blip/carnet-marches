@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getAnalyses } from '../../lib/posts';
+const analyses = await getAnalyses();
+---
+<Base title="Analyses" description="Analyses d’actions et d’entreprises">
+  <h1>Analyses</h1>
+  <p class="muted">Analyses d’entreprises et d’actions, à mon rythme. {analyses.length} analyse{analyses.length > 1 ? 's' : ''}.</p>
+  <PostList items={analyses} />
+</Base>

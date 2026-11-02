@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import QuoteCard from '../components/QuoteCard.astro';
+import { getCryptos, getIndices, fmtPrix, fmtPct, sens } from '../lib/market';
+import { fmtDateHeure } from '../lib/util';
+
+const [cryptos, indices] = await Promise.all([getCryptos(), getIndices()]);
+const groupes = [...new Set(indices.map((i) => i.groupe ?? 'Autres'))];
+---
+<Base title="Marchés" description="Cryptomonnaies, indices boursiers, devises et matières premières">
+  <h1>Marchés</h1>
+  <p class="muted">Cryptos actualisées en direct toutes les minutes. Indices, devises et matières premières mis à jour à chaque
+    reconstruction du site (dernière : {fmtDateHeure(new Date())}).</p>
+
+  <div class="section-title"><h2>Cryptomonnaies</h2><span class="muted small">7 jours</span></div>
+  <div class="grid big">{cryptos.map((q) => <QuoteCard q={q} grand />)}</div>
+
+  {groupes.map((g) => (
+    <>
+      <div class="section-title"><h2>{g}</h2><span class="muted small">3 mois</span></div>
+      <div class="grid big">{indices.filter((i) => (i.groupe ?? 'Autres') === g).map((q) => <QuoteCard q={q} grand />)}</div>
+    </>
+  ))}
+
+  <div class="section-title"><h2>Tableau récapitulatif</h2></div>
+  <div class="table-wrap">
+    <table class="num">
+      <thead><tr><th>Actif</th><th>Dernier</th><th>1 j</th><th>7 j</th><th>1 mois</th></tr></thead>
+      <tbody>
+        {[...cryptos, ...indices].map((q) => (
+          <tr data-crypto={q.id}>
+            <td><b>{q.nom}</b></td>
+            <td data-f="prix" data-devise={q.devise}>{fmtPrix(q.prix, q.devise)}</td>
+            <td class={sens(q.var1j)} data-f="var1j">{fmtPct(q.var1j)}</td>
+            <td class={sens(q.var7j)} data-f="var7j">{fmtPct(q.var7j)}</td>
+            <td class={sens(q.var1m)} data-f="var1m">{fmtPct(q.var1m)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Base>
+<style>
+  .big { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>

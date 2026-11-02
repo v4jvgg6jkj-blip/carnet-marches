@@ -1,0 +1,34 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { fmtDate, url } from '../lib/util';
+type E = CollectionEntry<'notes'> | CollectionEntry<'analyses'>;
+interface Props { items: E[]; vide?: string }
+const { items, vide = 'Rien de publié pour le moment.' } = Astro.props;
+---
+{items.length === 0 ? <p class="muted">{vide}</p> : (
+  <ul class="posts">
+    {items.map((e) => {
+      const d = e.data as any;
+      return (
+        <li>
+          <div class="meta muted small">
+            <time datetime={d.date.toISOString()}>{fmtDate(d.date)}</time>
+            {e.collection === 'analyses' && d.ticker && <> · <b>{d.entreprise}</b> ({d.ticker})</>}
+            {e.collection === 'analyses' && d.avis && <> · <span class="badge">{d.avis}</span></>}
+            {e.collection === 'notes' && d.sources?.length > 0 && <> · {d.sources.join(', ')}</>}
+          </div>
+          <h3><a href={url(`/${e.collection}/${e.id}`)}>{d.title}</a></h3>
+          {d.resume && <p class="muted">{d.resume}</p>}
+          {d.tags?.length > 0 && <div>{d.tags.map((t: string) => <span class="tag">#{t}</span>)}</div>}
+        </li>
+      );
+    })}
+  </ul>
+)}
+<style>
+  .posts { list-style: none; padding: 0; margin: 0; }
+  li { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  h3 { margin: 4px 0 6px; font-size: 1.25rem; }
+  h3 a { color: var(--ink); }
+  p { margin: 0 0 8px; }
+</style>

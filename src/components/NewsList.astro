@@ -1,0 +1,29 @@
+---
+import type { News } from '../lib/news';
+import { fmtDateHeure } from '../lib/util';
+interface Props { items: News[]; resume?: boolean }
+const { items, resume = false } = Astro.props;
+---
+{items.length === 0 ? (
+  <p class="muted">Les actualités n’ont pas pu être chargées lors de la dernière mise à jour du site.</p>
+) : (
+  <ul class="news">
+    {items.map((n) => (
+      <li>
+        <a href={n.lien} target="_blank" rel="noopener noreferrer">{n.titre}</a>
+        {resume && n.resume && <p class="muted small r">{n.resume}</p>}
+        <div class="muted small">
+          <span class="src">{n.source}</span>
+          {n.date > 0 && <> · {fmtDateHeure(new Date(n.date))}</>}
+        </div>
+      </li>
+    ))}
+  </ul>
+)}
+<style>
+  .news { list-style: none; margin: 0; padding: 0; }
+  li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  li a { color: var(--ink); font-weight: 500; line-height: 1.4; }
+  .src { font-weight: 600; color: var(--accent); }
+  .r { margin: 4px 0; }
+</style>

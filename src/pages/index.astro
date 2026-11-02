@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import QuoteCard from '../components/QuoteCard.astro';
+import NewsList from '../components/NewsList.astro';
+import PostList from '../components/PostList.astro';
+import { getCryptos, getIndices } from '../lib/market';
+import { getNews } from '../lib/news';
+import { getNotes, getAnalyses } from '../lib/posts';
+import { SITE, NB_NEWS_ACCUEIL } from '../config';
+import { url, fmtDate, fmtDateHeure } from '../lib/util';
+
+const [cryptos, indices, news, notes, analyses] = await Promise.all([getCryptos(), getIndices(), getNews(), getNotes(), getAnalyses()]);
+const principaux = indices.filter((i) => ['^FCHI', '^GSPC', '^IXIC'].includes(i.symbole));
+const derniere = notes[0];
+const maj = new Date();
+---
+<Base>
+  <section class="hero">
+    <p class="muted small date">{fmtDate(maj, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+    <h1>{SITE.titre}</h1>
+    <p class="muted lead">{SITE.sousTitre}</p>
+  </section>
+
+  <div class="section-title"><h2>Marchés</h2><a href={url('/marches')}>Tout voir →</a></div>
+  <div class="grid quotes">
+    {cryptos.map((q) => <QuoteCard q={q} />)}
+    {principaux.map((q) => <QuoteCard q={q} />)}
+  </div>
+  <p class="muted small">Cryptos en direct (24 h) · indices sur 1 mois, mis à jour le {fmtDateHeure(maj)}</p>
+
+  <div class="cols">
+    <div>
+      <div class="section-title"><h2>Notes du jour</h2><a href={url('/notes')}>Toutes les notes →</a></div>
+      {derniere && (
+        <article class="card une">
+          <p class="muted small">{fmtDate(derniere.data.date, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <h3><a href={url(`/notes/${derniere.id}`)}>{derniere.data.title}</a></h3>
+          {derniere.data.resume && <p>{derniere.data.resume}</p>}
+        </article>
+      )}
+      <PostList items={notes.slice(1, 6)} vide="" />
+
+      <div class="section-title"><h2>Analyses</h2><a href={url('/analyses')}>Toutes les analyses →</a></div>
+      <PostList items={analyses.slice(0, 4)} vide="Aucune analyse publiée pour l’instant." />
+    </div>
+    <aside>
+      <div class="section-title"><h2>Fil d’actualité</h2><a href={url('/actualites')}>Plus →</a></div>
+      <NewsList items={news.slice(0, NB_NEWS_ACCUEIL)} />
+    </aside>
+  </div>
+</Base>
+<style>
+  .hero { padding: 32px 0 0; }
+  .date { text-transform: capitalize; margin: 0; }
+  .lead { font-size: 1.1rem; margin: 0; }
+  .quotes { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); }
+  .cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 40px; }
+  @media (max-width: 860px) { .cols { grid-template-columns: 1fr; gap: 0; } }
+  .une h3 { font-size: 1.5rem; margin: 0 0 8px; }
+  .une h3 a { color: var(--ink); }
+  .une p:last-child { margin-bottom: 0; }
+</style>

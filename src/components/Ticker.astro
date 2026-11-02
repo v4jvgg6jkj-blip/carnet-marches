@@ -1,0 +1,74 @@
+---
+import { getCryptos, getYahooQuote, fmtPrix, fmtPct, sens } from '../lib/market';
+import { INDICES } from '../config';
+interface Props { symboles: string[] }
+const cryptos = await getCryptos();
+const indices = await Promise.all(
+  Astro.props.symboles.map((s) => getYahooQuote(s, INDICES.find((i) => i.symbole === s)?.nom ?? s)),
+);
+const items = [...cryptos, ...indices];
+---
+<div class="ticker" aria-label="Cours des marchés">
+  <div class="wrap row">
+    {items.map((q) => (
+      <span class="item num" data-crypto={q.id}>
+        <b>{q.id ? q.symbole : q.nom}</b>
+        <span data-f="prix" data-devise={q.devise}>{fmtPrix(q.prix, q.devise)}</span>
+        <span class={sens(q.var1j)} data-f="var1j">{fmtPct(q.var1j)}</span>
+      </span>
+    ))}
+    <span class="item live muted" title="Cryptos rafraîchies automatiquement"><i></i>live</span>
+  </div>
+</div>
+<style>
+  .ticker { background: var(--ink); color: var(--bg); font-size: 0.82rem; overflow-x: auto; scrollbar-width: none; }
+  .ticker::-webkit-scrollbar { display: none; }
+  .row { display: flex; gap: 22px; padding-top: 7px; padding-bottom: 7px; white-space: nowrap; }
+  .item { display: inline-flex; gap: 6px; }
+  .item b { font-weight: 600; }
+  .ticker .hausse { color: #4fd59a; }
+  .ticker .baisse { color: #ff7d70; }
+  .live { color: #aab; display: inline-flex; align-items: center; gap: 5px; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: #4fd59a; animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+</style>
+<script>
+  import { coingeckoUrl, fmtPrix, fmtPct, sens } from '../lib/market';
+  import { sparkPath } from '../lib/sparkline';
+
+  // Rafraîchit les cours crypto dans le navigateur (CoinGecko accepte les appels directs, sans clé).
+  async function rafraichir() {
+    try {
+      const res = await fetch(coingeckoUrl());
+      if (!res.ok) return;
+      const data: any[] = await res.json();
+      for (const d of data) {
+        document.querySelectorAll<HTMLElement>(`[data-crypto="${d.id}"]`).forEach((el) => {
+          const set = (f: string, v: number | null) => {
+            el.querySelectorAll<HTMLElement>(`[data-f="${f}"]`).forEach((n) => {
+              n.textContent = f === 'prix' ? fmtPrix(v, n.dataset.devise) : fmtPct(v);
+              if (f !== 'prix') n.className = n.className.replace(/\b(hausse|baisse)\b/g, '').trim() + ' ' + sens(v);
+            });
+          };
+          set('prix', d.current_price);
+          set('var1j', d.price_change_percentage_24h_in_currency ?? d.price_change_percentage_24h);
+          set('var7j', d.price_change_percentage_7d_in_currency);
+          set('var1m', d.price_change_percentage_30d_in_currency);
+          const prices: number[] = d.sparkline_in_7d?.price ?? [];
+          el.querySelectorAll<SVGSVGElement>('svg.spark').forEach((svg) => {
+            const w = Number(svg.dataset.w), h = Number(svg.dataset.h);
+            const vals = svg.closest('.grand') ? prices : prices.slice(-25); // 24 h sur les petites cartes
+            const { line, area } = sparkPath(vals, w, h);
+            svg.querySelector('[data-f="line"]')?.setAttribute('d', line);
+            svg.querySelector('[data-f="area"]')?.setAttribute('d', area);
+            svg.style.setProperty('--c', vals.at(-1)! >= vals[0] ? 'var(--hausse)' : 'var(--baisse)');
+          });
+        });
+      }
+    } catch {
+      /* hors-ligne ou limite de requêtes : on garde les valeurs du build */
+    }
+  }
+  rafraichir();
+  setInterval(rafraichir, 60_000);
+</script>

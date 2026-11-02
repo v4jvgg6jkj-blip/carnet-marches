@@ -1,0 +1,21 @@
+---
+import { sparkPath } from '../lib/sparkline';
+interface Props { valeurs: number[]; w?: number; h?: number; variation?: number | null; class?: string }
+const { valeurs, w = 120, h = 36, variation, class: cls = '' } = Astro.props;
+const { line, area } = sparkPath(valeurs, w, h);
+const couleur = (variation ?? (valeurs.at(-1)! - valeurs[0])) >= 0 ? 'var(--hausse)' : 'var(--baisse)';
+const gid = 'g' + Math.random().toString(36).slice(2, 9);
+---
+<svg class={`spark ${cls}`} viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none" aria-hidden="true" data-w={w} data-h={h} style={`--c:${couleur}`}>
+  <defs>
+    <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="currentColor" stop-opacity="0.18" />
+      <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <path data-f="area" d={area} fill={`url(#${gid})`} />
+  <path data-f="line" d={line} fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round" />
+</svg>
+<style>
+  .spark { display: block; color: var(--c); overflow: visible; }
+</style>

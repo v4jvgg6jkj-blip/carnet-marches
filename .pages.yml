@@ -1,0 +1,46 @@
+# Configuration de Pages CMS (https://pagescms.org) : éditeur en ligne gratuit
+# pour écrire notes et analyses depuis le navigateur, sans toucher au code.
+media:
+  input: public/images
+  output: /images
+content:
+  - name: notes
+    label: Notes du jour
+    type: collection
+    path: src/content/notes
+    filename: '{year}-{month}-{day}-{primary}.md'
+    view:
+      fields: [title, date]
+      sort: [date]
+      default: { sort: date, order: desc }
+    fields:
+      - { name: title, label: Titre, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: sources, label: Journaux lus, type: string, list: true }
+      - { name: tags, label: Tags, type: string, list: true }
+      - { name: resume, label: Résumé (1-2 phrases), type: text }
+      - { name: brouillon, label: Brouillon (non publié), type: boolean, default: false }
+      - { name: body, label: Contenu, type: rich-text }
+  - name: analyses
+    label: Analyses
+    type: collection
+    path: src/content/analyses
+    filename: '{year}-{month}-{day}-{primary}.md'
+    view:
+      fields: [title, entreprise, date]
+      default: { sort: date, order: desc }
+    fields:
+      - { name: title, label: Titre, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: entreprise, label: Entreprise, type: string, required: true }
+      - { name: ticker, label: Ticker Yahoo Finance (ex. MC.PA, AAPL), type: string }
+      - { name: secteur, label: Secteur, type: string }
+      - name: avis
+        label: Mon avis
+        type: select
+        options: { values: ['Achat', 'Renforcer', 'Conserver', 'Alléger', 'Vendre', 'À surveiller'] }
+      - { name: objectif, label: Objectif de cours, type: number }
+      - { name: tags, label: Tags, type: string, list: true }
+      - { name: resume, label: Résumé, type: text }
+      - { name: brouillon, label: Brouillon (non publié), type: boolean, default: false }
+      - { name: body, label: Contenu, type: rich-text }

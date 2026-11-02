@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import NewsList from '../components/NewsList.astro';
+import { getNews } from '../lib/news';
+import { FLUX_RSS, NB_NEWS_PAGE } from '../config';
+import { fmtDateHeure } from '../lib/util';
+const news = await getNews();
+---
+<Base title="Actualités" description="Fil d’actualités financières et marchés">
+  <h1>Actualités</h1>
+  <p class="muted">Fil agrégé depuis {FLUX_RSS.map((f) => f.nom).join(', ')}. Mis à jour le {fmtDateHeure(new Date())}.</p>
+  <NewsList items={news.slice(0, NB_NEWS_PAGE)} resume />
+</Base>

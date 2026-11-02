@@ -1,0 +1,36 @@
+---
+import type { Quote } from '../lib/market';
+import { fmtPrix, fmtPct, sens } from '../lib/market';
+import Sparkline from './Sparkline.astro';
+interface Props { q: Quote; grand?: boolean; periode?: string }
+const { q, grand = false, periode } = Astro.props;
+// petites cartes : 24 h pour les cryptos, 1 mois (≈22 séances) pour les indices
+const valeurs = (grand ? q.serie : q.serie.slice(q.id ? -25 : -22)).map((p) => p.v);
+---
+<article class:list={['card', 'quote', { grand }]} data-crypto={q.id}>
+  <header>
+    <div class="nom">
+      <strong>{q.nom}</strong>
+      {q.id && <span class="muted small sym">{q.symbole}</span>}
+    </div>
+    <span class={`badge ${sens(q.var1j)} num`} data-f="var1j">{fmtPct(q.var1j)}</span>
+  </header>
+  <div class="prix num" data-f="prix" data-devise={q.devise}>{fmtPrix(q.prix, q.devise)}</div>
+  {valeurs.length > 1 ? <Sparkline valeurs={valeurs} h={grand ? 110 : 40} w={grand ? 320 : 120} /> : <div class="vide muted small">Données indisponibles</div>}
+  <footer class="muted small num">
+    <span>7 j : <b class={sens(q.var7j)} data-f="var7j">{fmtPct(q.var7j)}</b></span>
+    <span>1 mois : <b class={sens(q.var1m)} data-f="var1m">{fmtPct(q.var1m)}</b></span>
+  </footer>
+  {periode && <p class="muted small periode">{periode}</p>}
+</article>
+<style>
+  .quote { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .nom { min-width: 0; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sym { margin-left: 4px; }
+  .prix { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.01em; }
+  .grand .prix { font-size: 1.8rem; }
+  footer { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .vide { height: 40px; display: flex; align-items: center; }
+  .periode { margin: 0; }
+</style>

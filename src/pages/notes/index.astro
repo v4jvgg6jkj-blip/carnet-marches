@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getNotes } from '../../lib/posts';
+const notes = await getNotes();
+---
+<Base title="Notes" description="Notes de lecture quotidiennes de la presse économique">
+  <h1>Notes de lecture</h1>
+  <p class="muted">Ce que je retiens chaque jour en lisant la presse. {notes.length} note{notes.length > 1 ? 's' : ''}.</p>
+  <PostList items={notes} />
+</Base>
