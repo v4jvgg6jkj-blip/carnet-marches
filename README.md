@@ -11,7 +11,7 @@ Site statique [Astro](https://astro.build), hébergé **gratuitement** sur GitHu
 |---|---|---|---|
 | BTC, ETH, SOL | API publique CoinGecko | Non | En direct dans le navigateur, toutes les 60 s |
 | Indices, devises, matières premières, cours des actions analysées | Yahoo Finance (API chart) | Non | À chaque reconstruction (toutes les heures en semaine) |
-| Actualités | Flux RSS : Les Echos, Le Monde, Investing.com, CNBC, Yahoo Finance, CoinDesk | Non | À chaque reconstruction |
+| Actualités | Flux RSS : Le Figaro, BFM Bourse, Le Monde, Investing.com, CNBC, MarketWatch, CoinDesk | Non | À chaque reconstruction |
 
 Tout se règle dans `src/config.ts` : liste des cryptos, des indices, du bandeau, des flux RSS, devise (EUR/USD).
 Si une source est en panne, le site se construit quand même et affiche « — ».

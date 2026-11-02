@@ -15,7 +15,8 @@ async function lireFlux(nom: string, url: string): Promise<News[]> {
     const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CarnetDeMarches/1.0)' }, signal: ctrl.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const xml = parser.parse(await res.text());
-    const items: any[] = [].concat(xml?.rss?.channel?.item ?? xml?.feed?.entry ?? []);
+    const items: any[] = [].concat(xml?.rss?.channel?.item ?? xml?.feed?.entry ?? xml?.['rdf:RDF']?.item ?? []);
+    console.log(`[news] ${nom} : ${items.length} articles`);
     return items
       .map((it) => {
         const lien = typeof it.link === 'string' ? it.link : it.link?.['@href'] ?? txt(it.guid);

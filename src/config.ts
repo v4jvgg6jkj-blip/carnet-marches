@@ -37,11 +37,12 @@ export const BANDEAU = ['^FCHI', '^GSPC', '^IXIC', 'EURUSD=X'];
 
 // Flux RSS d'actualités financières (sans clé). Un flux en panne est simplement ignoré.
 export const FLUX_RSS = [
-  { nom: 'Les Echos', url: 'https://syndication.lesechos.fr/rss/rss_finance-marches.xml' },
+  { nom: 'Le Figaro', url: 'https://www.lefigaro.fr/rss/figaro_economie.xml' },
+  { nom: 'BFM Bourse', url: 'https://www.tradingsat.com/rssbourse.xml' },
   { nom: 'Le Monde', url: 'https://www.lemonde.fr/economie/rss_full.xml' },
   { nom: 'Investing.com', url: 'https://fr.investing.com/rss/news_25.rss' },
   { nom: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html' },
-  { nom: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex' },
+  { nom: 'MarketWatch', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories' },
   { nom: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/' },
 ];
 

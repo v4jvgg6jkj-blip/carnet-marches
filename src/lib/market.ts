@@ -42,6 +42,7 @@ export function getCryptos(): Promise<Quote[]> {
   cryptoCache ??= (async () => {
     try {
       const data: any[] = await getJSON(coingeckoUrl());
+      console.log(`[marchés] CoinGecko : ${data.length} cryptos`);
       return CRYPTOS.map((c) => {
         const d = data.find((x) => x.id === c.id);
         const prices: number[] = d?.sparkline_in_7d?.price ?? [];
@@ -81,6 +82,7 @@ export function getYahooQuote(symbole: string, nom = symbole, groupe?: string): 
             const json = await getJSON(url);
             const r = json?.chart?.result?.[0];
             if (!r) throw new Error('réponse vide');
+            console.log(`[marchés] Yahoo ${symbole} : ${r.meta?.regularMarketPrice}`);
             const ts: number[] = r.timestamp ?? [];
             const closes: (number | null)[] = r.indicators?.quote?.[0]?.close ?? [];
             const serie: Serie = ts
